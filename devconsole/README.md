@@ -1,5 +1,7 @@
 # Install the latest Dev Console as another application (to test)
 
+**Acknowledgements:** Based on Steve Speicher's https://github.com/sspeiche/dev-console
+
 ## Pre-requisites
 * OCP4 Cluster
 * You will need admin access and login as admin user to do this
