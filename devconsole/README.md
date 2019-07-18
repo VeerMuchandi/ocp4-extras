@@ -58,15 +58,16 @@ redirectURIs:
 - https://<<yourNewDevConsoleURL>>/auth/callback
 secret: <<secretOfYourChoice>>
 ```
-Create OAuthClient. Note `clientId` is `devconsole` and the secret will be base64 encoded (`echo <<secretOfYourChoice>> | base64`).
+Note `clientId` is `devconsole` and the secret will be a string of your choice. You can leave the avlue you copied from the other `oauthclient` if you don't want to change it
 
+Create oauthclient.
 ```
 oc create -f oauthclient.yaml
 ```
 
-Update the base64 encoded value of your secret in `console-oauth-config.yaml`
+Update the base64 encoded value of your secret in `console-oauth-config.yaml` (`echo <<secretOfYourChoice>> | base64`).
 
-Now create console.
+Now create console-oauth-config
 ```
 oc create -f console-oauth-config.yaml
 ```
