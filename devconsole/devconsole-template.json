@@ -1,0 +1,319 @@
+{
+    "apiVersion": "template.openshift.io/v1",
+    "kind": "Template",
+    "metadata": {
+        "name": "devconsole-latest",
+        "annotations": {
+            "description": "Deploys latest Console and stays current for it."
+        }
+    },
+    "parameters": [
+        {
+            "name": "OPENSHIFT_API_URL",
+            "description": "The Openshift API url",
+            "displayName": "Openshift API URL",
+            "value": "https://api.openshift.codeready.cloud:6443",
+            "required": true
+        },
+        {
+            "name": "OPENSHIFT_CONSOLE_URL",
+            "description": "The OpenShift Console URL",
+            "displayName": "OpenShift Console URL",
+            "value": "console-devconsole.apps.openshift.codeready.cloud",
+            "required": true
+        }
+    ],
+    "objects": [
+        {
+            "apiVersion": "v1",
+            "kind": "ImageStream",
+            "metadata": {
+                "name": "origin-console",
+                "labels": {
+                    "app": "devconsole"
+                }
+            },
+            "spec": {
+                "lookupPolicy": {
+                    "local": false
+                },
+                "tags": [
+                    {
+                        "from": {
+                            "kind": "DockerImage",
+                            "name": "quay.io/openshift/origin-console:latest"
+                        },
+                        "generation": 3,
+                        "importPolicy": {
+                            "scheduled": true
+                        },
+                        "name": "latest",
+                        "referencePolicy": {
+                            "type": "Source"
+                        }
+                    }
+                ]
+        
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "data": {
+                "console-config.yaml": "kind: ConsoleConfig\napiVersion: console.openshift.io/v1beta1\nauth:\n  clientID: devconsole\n  clientSecretFile: /var/oauth-config/clientSecret\n  logoutRedirect: \"\"\n  oauthEndpointCAFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\nclusterInfo:\n  consoleBaseAddress: https://${OPENSHIFT_CONSOLE_URL}\n  consoleBasePath: \"\"\n  masterPublicURL: ${OPENSHIFT_API_URL}\ncustomization:\n  branding: ocp\n  documentationBaseURL: https://docs.openshift.com/container-platform/4.0/\nservingInfo:\n  bindAddress: https://0.0.0.0:8443\n  certFile: /var/serving-cert/tls.crt\n  keyFile: /var/serving-cert/tls.key\n"
+            },
+            "kind": "ConfigMap",
+            "metadata": {
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "devconsole"
+                },
+                "name": "devconsole"
+            }
+        },
+        {
+            "apiVersion": "apps.openshift.io/v1",
+            "kind": "DeploymentConfig",
+            "metadata": {
+                "labels": {
+                    "app": "devconsole",
+                    "component": "ui"
+                },
+                "name": "devconsole"
+            },
+            "spec": {
+                "replicas": 2,
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "console"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "origin-console:latest"
+                            }
+                        }
+                    }
+                ],
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "app": "devconsole",
+                    "component": "ui"
+                },
+                "strategy": {
+                    "type": "Rolling"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app": "devconsole",
+                            "component": "ui"
+                        },
+                        "name": "devconsole"
+                    },
+                    "spec": {
+                        "affinity": {
+                            "podAntiAffinity": {
+                                "preferredDuringSchedulingIgnoredDuringExecution": [
+                                    {
+                                        "podAffinityTerm": {
+                                            "labelSelector": {
+                                                "matchLabels": {
+                                                    "app": "devconsole"
+                                                }
+                                            },
+                                            "topologyKey": "kubernetes.io/hostname"
+                                        },
+                                        "weight": 100
+                                    }
+                                ]
+                            }
+                        },
+                        "containers": [
+                            {
+                                "command": [
+                                    "/opt/bridge/bin/bridge",
+                                    "--public-dir=/opt/bridge/static",
+                                    "--config=/var/console-config/console-config.yaml",
+                                    "--service-ca-file=/var/service-ca/service-ca.crt"
+                                ],
+                                "image": "origin-console:latest",
+                                "imagePullPolicy": "Always",
+                                "livenessProbe": {
+                                    "failureThreshold": 3,
+                                    "httpGet": {
+                                        "path": "/health",
+                                        "port": 8443,
+                                        "scheme": "HTTPS"
+                                    },
+                                    "initialDelaySeconds": 150,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 1
+                                },
+                                "name": "console",
+                                "ports": [
+                                    {
+                                        "containerPort": 443,
+                                        "name": "https",
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "readinessProbe": {
+                                    "failureThreshold": 3,
+                                    "httpGet": {
+                                        "path": "/health",
+                                        "port": 8443,
+                                        "scheme": "HTTPS"
+                                    },
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 1
+                                },
+                                "resources": {
+                                    "requests": {
+                                        "cpu": "10m",
+                                        "memory": "100Mi"
+                                    }
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/var/serving-cert",
+                                        "name": "console-serving-cert",
+                                        "readOnly": true
+                                    },
+                                    {
+                                        "mountPath": "/var/oauth-config",
+                                        "name": "console-oauth-config",
+                                        "readOnly": true
+                                    },
+                                    {
+                                        "mountPath": "/var/console-config",
+                                        "name": "console-config",
+                                        "readOnly": true
+                                    },
+                                    {
+                                        "mountPath": "/var/service-ca",
+                                        "name": "service-ca",
+                                        "readOnly": true
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "nodeSelector": {
+                            "node-role.kubernetes.io/master": ""
+                        },
+                        "priorityClassName": "system-cluster-critical",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "terminationGracePeriodSeconds": 30,
+                        "tolerations": [
+                            {
+                                "effect": "NoSchedule",
+                                "key": "node-role.kubernetes.io/master",
+                                "operator": "Exists"
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "console-serving-cert",
+                                "secret": {
+                                    "defaultMode": 420,
+                                    "secretName": "console-serving-cert"
+                                }
+                            },
+                            {
+                                "name": "console-oauth-config",
+                                "secret": {
+                                    "defaultMode": 420,
+                                    "secretName": "console-oauth-config"
+                                }
+                            },
+                            {
+                                "configMap": {
+                                    "defaultMode": 420,
+                                    "name": "devconsole"
+                                },
+                                "name": "console-config"
+                            },
+                            {
+                                "configMap": {
+                                    "defaultMode": 420,
+                                    "name": "service-ca"
+                                },
+                                "name": "service-ca"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "labels": {
+                    "app": "devconsole"
+                },
+                "name": "devconsole"
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "https",
+                        "port": 443,
+                        "protocol": "TCP",
+                        "targetPort": 8443
+                    }
+                ],
+                "selector": {
+                    "app": "devconsole",
+                    "component": "ui"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            }
+        },
+        {
+            "apiVersion": "route.openshift.io/v1",
+            "kind": "Route",
+            "metadata": {
+                "annotations": {
+                    "openshift.io/host.generated": "true"
+                },
+                "labels": {
+                    "app": "devconsole"
+                },
+                "name": "devconsole"
+            },
+            "spec": {
+                "host": "${OPENSHIFT_CONSOLE_URL}",
+                "port": {
+                    "targetPort": "https"
+                },
+                "tls": {
+                    "insecureEdgeTerminationPolicy": "None",
+                    "termination": "passthrough"
+                },
+                "to": {
+                    "kind": "Service",
+                    "name": "devconsole",
+                    "weight": 100
+                },
+                "wildcardPolicy": "None"
+            },
+            "status": {
+                "ingress": null
+            }
+        }
+    ]
+}

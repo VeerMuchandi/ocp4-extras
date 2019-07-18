@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  clientSecret: yourBase64EncodedSecret 
+kind: Secret
+metadata:
+  labels:
+    app: console
+  name: console-oauth-config
+type: Opaque

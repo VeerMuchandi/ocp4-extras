@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  tls.crt: >-
+    <<add the cert here>>
+  tls.key: >-
+    <<add the key here>
+kind: Secret
+metadata:
+  name: console-serving-cert
+type: kubernetes.io/tls
