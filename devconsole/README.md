@@ -65,7 +65,9 @@ Create oauthclient.
 oc create -f oauthclient.yaml
 ```
 
-Update the base64 encoded value of your secret in `console-oauth-config.yaml` (`echo <<secretOfYourChoice>> | base64`).
+Update the base64 encoded value of your secret in `console-oauth-config.yaml` (`echo -n <<secretOfYourChoice>> | base64`).
+
+**Note: ** Make sure you use `echo -n`, otherwise it will add a newline and the secret won't work.
 
 Now create console-oauth-config
 ```
