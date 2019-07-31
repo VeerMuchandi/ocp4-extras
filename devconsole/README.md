@@ -11,9 +11,11 @@
 
 1. Clone this repo and change to `devconsole`
 
-2. Create a new project
+2. Create a new namespace
+**Note:** You won't be allowed to create a project that starts with `openshift-`. Hence we are creating a namespace. The template we process in the last step has a `priorityClass` annotation that requires an `openshift-*` namespace.
+
 ```
-oc new-project devconsole
+oc create namespace openshift-devconsole
 ```
 
 3. Update service-ca-configmap.yaml, console-serving-cert.yaml with your values for similar objects from openshift-console project
