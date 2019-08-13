@@ -1,9 +1,8 @@
 apiVersion: v1
-data:
 kind: ConfigMap
 metadata:
-annotations:
-  service.alpha.openshift.io/inject-cabundle: "true"
+  annotations:
+    service.alpha.openshift.io/inject-cabundle: "true"
   labels:
     app: devconsole
   name: service-ca
