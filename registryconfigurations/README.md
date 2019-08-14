@@ -73,7 +73,14 @@ This change should update all the masters and nodes and add this change `[regist
     registries = ["docker.io"]
 ```
 
+Once all the nodes are up if you try to create an application using an image from docker.io, it will be blocked. You will see these kind of error messages in the events.
 
+```
+
+1s          Warning   InspectFailed       pod/welcome-1-fwcp4               Failed to inspect image "docker.io/veermuchandi/welcome@sha256:db4d49ca6ab825c013cb076a2824947c5378b845206cc29c6fd245744ffd35fb": rpc error: code = Unknown desc = cannot use "docker.io/veermuchandi/welcome@sha256:db4d49ca6ab825c013cb076a2824947c5378b845206cc29c6fd245744ffd35fb" because it's blocked
+1s          Warning   Failed              pod/welcome-1-fwcp4               Error: ImageInspectError
+
+```
 
 
 ## Configuring Insecure Registries
