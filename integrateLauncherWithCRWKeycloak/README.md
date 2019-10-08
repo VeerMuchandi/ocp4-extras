@@ -1,7 +1,47 @@
 # Integrating Launcher with Keycloak installed by CRW
 
-## Install CodeReady Workspaces
-Work in progress
+## Install EclipseChe 7.1
+
+Install Eclipse Che7.1 on your OCP4 cluster following the documentation explained here
+[https://www.eclipse.org/che/docs/che-7/installing-che-on-openshift-4-from-operatorhub/](https://www.eclipse.org/che/docs/che-7/installing-che-on-openshift-4-from-operatorhub/)
+
+>**Note** Once CRW2.x is released we will replace EclipseChe7.x with CRW in the above step.
+
+Note also enable SSL as explained here [https://www.eclipse.org/che/docs/che-7/installing-che-on-openshift-4-from-operatorhub/#enabling-ssl-on-openshift-4_installing-che-on-openshift-4-from-operatorhub](https://www.eclipse.org/che/docs/che-7/installing-che-on-openshift-4-from-operatorhub/#enabling-ssl-on-openshift-4_installing-che-on-openshift-4-from-operatorhub)
+
+Most likely you are using a self-signed certificates.  IDE gets stuck several times due to these self-signed certificates. There are two ways to deal with this issue:
+
+1.   Look at the developer console in your browser to figure out which URLs are failing, access those URLS, go to advanced and agree to move forward with that URL. You may have to do this multiple times for different URLs (such as plugin registry, devfile registry, keycloak etc)
+2. Easier way is to add the self-signed certificate as a trusted cert as explained here [https://www.accuweaver.com/2014/09/19/make-chrome-accept-a-self-signed-certificate-on-osx/](https://www.accuweaver.com/2014/09/19/make-chrome-accept-a-self-signed-certificate-on-osx/)
+
+### Keycloak Setup
+
+EclipseChe 7.x installation above also installs Keycloak Server.
+
+#### Add Github Identity Provider
+Login to the KeyCloak admin console. 
+You can find the keycloak URL associated with the route in the namespace where Che 7.x was installed. You can find it by running `oc get route keycloak -o jsonpath='{.spec.host}'`
+
+For the admin password, check the environment variables in the `Deployment` for Keycloak. You can find it by running `oc get deployment keycloak -o yaml | grep -A1 KEYCLOAK_PASSWORD`
+
+Navigate to `Identity Providers` on the left menu. You will see  `openshift-v4` identity provider already existing. This means your keycloak is already integrated with the authentication mechanism configured for your openshift cluster.
+
+Let us now add a new identity provider for `github`. 
+* Press on `Add Provider` and select `github` provider
+
+* Configure github provider as shown in the following figure. Note the value of `Redirect URI`
+
+![](GitHubProvider.png)
+
+
+* To fill the values for `Client ID` and `Client Secret` above, login to your Github account, go to `Settings` and `Developer Settings`.  Then add an `OAuth App` let us say with the name `launcher` as shown in the screen below. This will generate a `Client Id` and `Client Secret` that you can use to configure Github Identity provider in Keycloak. Make sure you set the `Authorization Callback URL` to the `Redirect URI` noted above.
+
+
+![](GitHubOAuthApp.png)
+
+You can set the `HomePage URL` to some temporary URL and later come back and update it to Launcher's URL if you wish.
+
+
 
 ## Install Fabric8 Launcher
 
@@ -103,5 +143,7 @@ $ oc get route launcher --template={{.spec.host}}
 launcher-launcher-infra.apps.ocp4.home.ocpcloud.com
 ```
 Use this to log on to your launcher.
+
+Optionally, You can also go back and update the Github OAuth App to set the `Homepage URL` to this value.
 
 
