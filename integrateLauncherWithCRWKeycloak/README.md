@@ -32,7 +32,7 @@ Let us now add a new identity provider for `github`.
 * Configure github provider as shown in the following figure. Note the value of `Redirect URI`
 
 ![](GitHubProvider.png)
-
+> **Note** the value of the URI should be `https`
 
 * To fill the values for `Client ID` and `Client Secret` above, login to your Github account, go to `Settings` and `Developer Settings`.  Then add an `OAuth App` let us say with the name `launcher` as shown in the screen below. This will generate a `Client Id` and `Client Secret` that you can use to configure Github Identity provider in Keycloak. Make sure you set the `Authorization Callback URL` to the `Redirect URI` noted above.
 
@@ -41,7 +41,7 @@ Let us now add a new identity provider for `github`.
 
 You can set the `HomePage URL` to some temporary URL and later come back and update it to Launcher's URL if you wish.
 
-
+>**Note** the Authorization callback URL is `https`
 
 ## Install Fabric8 Launcher
 
