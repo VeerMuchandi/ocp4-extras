@@ -147,3 +147,18 @@ Use this to log on to your launcher.
 Optionally, You can also go back and update the Github OAuth App to set the `Homepage URL` to this value.
 
 
+#### Update Launcher into KeyCloak
+
+Navigate back to Keycloak Admin console.  Select `Clients` from the left menu and locate `Che-public`.
+
+Scroll down to `Valid Redirect URIs` and add Launcher's route with a `/*` to this list. You may want to add both `http` and `https`.
+
+Also add these routes to `Web Origins` as well. See the screenshot below.
+
+![](KeycloakClientConfig.png)
+
+#### Update GitHub OAuth App Homepage URL
+
+Go back to your Github OAuth App that we configured earlier and update the HomePage URL to the Launcher's URL
+
+![](GitHubOAuthApp.png)
