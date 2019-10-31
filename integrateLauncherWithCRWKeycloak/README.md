@@ -7,7 +7,7 @@ Install Eclipse Che7.1 on your OCP4 cluster following the documentation explaine
 
 >**Note** Once CRW2.x is released we will replace EclipseChe7.x with CRW in the above step.
 
-Note also enable SSL as explained here [https://www.eclipse.org/che/docs/che-7/installing-che-on-openshift-4-from-operatorhub/#enabling-ssl-on-openshift-4_installing-che-on-openshift-4-from-operatorhub](https://www.eclipse.org/che/docs/che-7/installing-che-on-openshift-4-from-operatorhub/#enabling-ssl-on-openshift-4_installing-che-on-openshift-4-from-operatorhub)
+Note also enable SSL as explained here [https://www.eclipse.org/che/docs/che-7/installing-che-on-openshift-4-from-operatorhub/#enabling-ssl-on-openshift-4_installing-che-on-openshift-4-from-operatorhub](https://www.eclipse.org/che/docs/che-7/installing-che-on-openshift-4-from-operatorhub/#enabling-ssl-on-openshift-4_installing-che-on-openshift-4-from-operatorhub). **Note** that you will have to set `selfSignedCert: true` in the custom resource, if you are using self-signed certs. 
 
 Most likely you are using a self-signed certificates.  IDE gets stuck several times due to these self-signed certificates. There are two ways to deal with this issue:
 
