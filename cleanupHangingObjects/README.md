@@ -32,6 +32,18 @@ If you want to get rid of all hanging PVs run the following command after above.
 for i in $(oc get pv | grep Released| awk '{print $1}'); do oc patch pv $i --type='json' -p='[{"op": "replace", "path": "/metadata/finalizers", "value":[]}]'; done
 
 ```
+
+## Deleting all `Evicted` pods
+
+Login as admin and run this 
+
+```
+for project in $(oc get pods --all-namespaces| grep Evicted| awk '{print $1}' | uniq); \
+do echo $project; \
+oc delete po $(oc get pods -n $project | grep Evicted| awk '{print $1}') -n $project; \
+done
+```
+
 ## Node running out of IP Addresses
 
 **Use case:** Workloads (pods) get assigned to node but they stay in `Container Creating` mode. If you check project events, it shows an error that looks like this
