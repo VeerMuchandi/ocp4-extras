@@ -44,6 +44,41 @@ oc delete po $(oc get pods -n $project | grep Evicted| awk '{print $1}') -n $pro
 done
 ```
 
+## Cleaning up all pods stuck in `Terminating` status and not going away
+
+Login as admin and run this 
+
+```
+for project in $(oc get pods --all-namespaces| grep Terminating| awk '{print $1}' | uniq); \
+do echo $project; \
+oc delete po $(oc get pods -n $project | grep Terminating| awk '{print $1}') -n $project --grace-period=0 --force; \
+done
+```
+
+## Cleaning up all pods stuck in `Error` status 
+
+If your cluster got abruptly restarted, you may have a bunch of pods in `Error` status when the cluster comes back up. Deleting these application pods in `Error` status should bring up new pods in their place. In order to handle this across the cluster
+
+Login as admin and run this 
+
+```
+for project in $(oc get pods --all-namespaces| grep Error| awk '{print $1}' | uniq); \
+do echo $project; \
+oc delete po $(oc get pods -n $project | grep Error | awk '{print $1}') -n $project --grace-period=0 --force; \
+done
+```
+
+## Pods in `NotReady` status on Nodes
+
+Usually you wont ssh to the nodes on an OCP4 cluster. But if you realize that there are pods stuck in `NotReady` status on nodes (let us say after an abrupt restart) and you want to get rid of those:
+
+Log onto each node and run 
+
+```
+# crictl rmp $(crictl pods | grep NotReady | awk '{print $1}')
+```
+
+
 ## Node running out of IP Addresses
 
 **Use case:** Workloads (pods) get assigned to node but they stay in `Container Creating` mode. If you check project events, it shows an error that looks like this
