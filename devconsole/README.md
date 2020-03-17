@@ -9,6 +9,26 @@
 
 ## Steps
 
+### Short Script
+
+If you want don't want to follow step by step instructions in details. Just run the following script with your own value for `SECRET`
+
+```
+###############################
+# INSTALL DEVCONSOLE          #
+###############################
+export SECRET=mysecret
+oc create namespace openshift-devconsole
+oc project openshift-devconsole
+oc get cm service-ca -n openshift-console --export -o yaml | sed -e "s/app: console/app: devconsole/g" | oc apply -n openshift-devconsole -f -
+oc get secret console-serving-cert -n openshift-console --export -o yaml | oc apply -n openshift-devconsole -f -
+oc get oauthclient console --export -o yaml | sed -e "s/name: console/name: devconsole/g" -e "s/console-openshift-console/devconsole/g" -e "s/^secret: .*/secret: $SECRET/g" | oc apply -f - 
+curl https://raw.githubusercontent.com/VeerMuchandi/ocp4-extras/master/devconsole/console-oauth-config.yaml | sed -e "s/yourBase64EncodedSecret/$(echo -n $SECRET | base64)/g"| oc apply -f -
+oc process -f https://raw.githubusercontent.com/VeerMuchandi/ocp4-extras/master/devconsole/devconsole-template.json -p OPENSHIFT_API_URL=$(oc cluster-info | awk '/Kubernetes/{printf $NF}'| sed -e "s,$(printf '\033')\\[[0-9;]*[a-zA-Z],,g") -p OPENSHIFT_CONSOLE_URL=$(oc get oauthclient devconsole -o jsonpath='{.redirectURIs[0]}'| sed -e 's~http[s]*://~~g' -e "s/com.*/com/g") | oc create -f - 
+```
+
+### Step by Step Instructions
+
 1. Clone this repo and change to `devconsole`
 
 2. Create a new namespace
