@@ -125,11 +125,21 @@ role.rbac.authorization.k8s.io/leader-locking-nfs-client-provisioner created
 rolebinding.rbac.authorization.k8s.io/leader-locking-nfs-client-provisioner created
 ```
 
-Elevate SCC to `anyuid`
+Elevate SCC to `hostmount-anyuid`
+
+**If you don't have a cluster role** that points to `hostmount-anyuid` create one by running:
+
 ```
-# oc adm policy add-scc-to-user hostmount-anyuid system:serviceaccount:$NAMESPACE:nfs-client-provisioner
-securitycontextconstraints.security.openshift.io/hostmount-anyuid added to: ["system:serviceaccount:nfsprovisioner:nfs-client-provisioner"]
+oc create clusterrole hostmount-anyuid-role --verb=use --resource=scc --resource-name=hostmount-anyuid
 ```
+Now add the service account `nfs-client-provisioner` to that role by running
+
+```
+oc adm policy add-cluster-role-to-user hostmount-anyuid-role -z nfs-client-provisioner -n $NAMESPACE
+```
+
+The above method replaces the older way of editing default SCC i.e, `oc adm policy add-scc-to-user hostmount-anyuid system:serviceaccount:$NAMESPACE:nfs-client-provisioner` as this is discouraged in the openshift documentation now.
+
 
 Edit `deploy/deployment.yaml` for the values of NFS server and NFS path. Both in `env` and `volumes`
 
