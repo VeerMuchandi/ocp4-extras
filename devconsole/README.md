@@ -24,6 +24,9 @@ oc get cm service-ca -n openshift-console --export -o yaml | sed -e "s/app: cons
 oc get secret console-serving-cert -n openshift-console --export -o yaml | oc apply -n openshift-devconsole -f -
 oc get oauthclient console --export -o yaml | sed -e "s/name: console/name: devconsole/g" -e "s/console-openshift-console/devconsole/g" -e "s/^secret: .*/secret: $SECRET/g" | oc apply -f - 
 curl https://raw.githubusercontent.com/VeerMuchandi/ocp4-extras/master/devconsole/console-oauth-config.yaml | sed -e "s/yourBase64EncodedSecret/$(echo -n $SECRET | base64)/g"| oc apply -f -
+oc create clusterrole console --verb=get,list,watch --resource=customresourcedefinitions.apiextensions.k8s.io
+oc create sa console -n devconsole
+oc adm policy add-cluster-role-to-user console -z console -n devconsole
 oc process -f https://raw.githubusercontent.com/VeerMuchandi/ocp4-extras/master/devconsole/devconsole-template.json -p OPENSHIFT_API_URL=$(oc cluster-info | awk '/Kubernetes/{printf $NF}'| sed -e "s,$(printf '\033')\\[[0-9;]*[a-zA-Z],,g") -p OPENSHIFT_CONSOLE_URL=$(oc get oauthclient devconsole -o jsonpath='{.redirectURIs[0]}'| sed -e 's~http[s]*://~~g' -e "s/com.*/com/g") | oc create -f - 
 ```
 
