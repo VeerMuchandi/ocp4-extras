@@ -35,16 +35,18 @@ As a regular user
 
 ## Provide access to user(s) on a namespace
 
-Cluster administrator to add following roles to user(s). Each of these rolebindings can be created for different users, but here I am doing it for one user.
+Cluster administrator to add following roles to user(s). Each of these rolebindings can be created for different users. If you are doing it for one user, just 'monitoring-edit` access is sufficient which is a superset of the other two.
 
+* allows reading PrometheusRule custom resources within the namespace
 ```
 oc policy add-role-to-user monitoring-rules-view UserName -n ns1
 ```
 
+* allows creating, modifying, and deleting PrometheusRule custom resources matching the permitted namespace
 ```
 oc policy add-role-to-user monitoring-rules-edit UserName -n ns1
 ```
-
+* in addition to `monitoring-rules-edit` permissions it also allows creating new scraping targets for services or Pods. It also allows creating, modifying, and deleting ServiceMonitors and PodMonitors
 ```
 oc policy add-role-to-user monitoring-edit UserName -n ns1
 ```
